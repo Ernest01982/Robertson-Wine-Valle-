@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Vitis - Portal Access</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    
+    <div class="glass-panel max-w-md w-full p-8 text-center">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-2 text-gradient">Project Vitis</h1>
+            <p class="text-slate-400">Select your access tier to enter the portal.</p>
+        </div>
+
+        <div class="space-y-4">
+            <a href="/dashboard-admin.html" class="block w-full py-4 px-6 bg-[#1a1a20] hover:bg-wine hover-lift transition-colors border border-slate-700 rounded-xl font-medium text-left flex justify-between items-center group">
+                <div>
+                    <span class="block text-lg text-white">Central Admin</span>
+                    <span class="text-sm text-slate-400 group-hover:text-slate-200">Robertson Wine Valley</span>
+                </div>
+                <svg class="w-5 h-5 text-slate-400 group-hover:text-wine-bright transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </a>
+
+            <!-- Mocking a specific tenant login -->
+            <a href="/dashboard-tenant.html?producer_id=123e4567-e89b-12d3-a456-426614174000" class="block w-full py-4 px-6 bg-[#1a1a20] hover:bg-wine hover-lift transition-colors border border-slate-700 rounded-xl font-medium text-left flex justify-between items-center group">
+                <div>
+                    <span class="block text-lg text-white">Tenant Estate</span>
+                    <span class="text-sm text-slate-400 group-hover:text-slate-200">Wine Farm Login Demo</span>
+                </div>
+                <svg class="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </a>
+        </div>
+        
+        <div class="mt-8 text-sm text-slate-500">
+            <p>Automated WhatsApp Commerce Engine</p>
+        </div>
+    </div>
+
+</body>
+</html>

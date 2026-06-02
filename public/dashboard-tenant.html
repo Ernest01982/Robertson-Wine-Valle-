@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenant Portal - Project Vitis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-bold text-gradient">Farm Tenant Portal</h1>
+                <p class="text-slate-400">Isolated Financial Ledger & Fulfillment</p>
+            </div>
+            <a href="/" class="px-4 py-2 bg-[#1a1a20] hover:bg-wine border border-slate-700 rounded-lg transition-colors text-sm font-medium hover-lift">
+                Switch Role
+            </a>
+        </header>
+
+        <!-- Actions -->
+        <div class="mb-8 flex justify-end">
+            <button id="download-manifest" class="flex items-center px-4 py-2 bg-wine hover:bg-wine-hover text-white rounded-lg transition-colors shadow-lg shadow-black/50 font-medium hover-lift">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Download Shipping Manifest
+            </button>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="glass-panel p-6 hover-lift border-l-4 border-l-slate-600">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Gross Sales Value</h3>
+                <p class="text-3xl font-bold text-white" id="metric-gross">-</p>
+                <p class="text-xs text-slate-500 mt-2">Total before platform/gateway deductions</p>
+            </div>
+            <div class="glass-panel p-6 hover-lift border-l-4 border-l-wine">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Platform Fees Deducted</h3>
+                <p class="text-3xl font-bold text-wine-bright" id="metric-fees">-</p>
+                <p class="text-xs text-slate-500 mt-2">R6.00 per R200 spent</p>
+            </div>
+            <div class="glass-panel p-6 hover-lift border-l-4 border-l-green-600">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Net Farm Payout</h3>
+                <p class="text-3xl font-bold text-green-400" id="metric-net">-</p>
+                <p class="text-xs text-slate-500 mt-2">Cleared for settlement</p>
+            </div>
+        </div>
+
+        <!-- Inventory List -->
+        <div class="glass-panel p-6">
+            <h2 class="text-xl font-bold text-white mb-6">Active Allocations</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-slate-400 text-sm">
+                            <th class="pb-3 font-medium">Product / Bundle</th>
+                            <th class="pb-3 font-medium">Type</th>
+                            <th class="pb-3 font-medium text-right">Allocated</th>
+                            <th class="pb-3 font-medium text-right">Remaining Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-body" class="text-sm">
+                        <!-- JS injects rows here -->
+                    </tbody>
+                </table>
+                <div id="loading-state" class="py-10 text-center text-slate-500">Loading ledger data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get producer ID from URL parameters, defaulting to the mock ID if none provided.
+        const urlParams = new URLSearchParams(window.location.search);
+        const producerId = urlParams.get('producer_id') || '123e4567-e89b-12d3-a456-426614174000';
+
+        async function fetchTenantData() {
+            try {
+                const res = await fetch(`/api/dashboard/tenant/${producerId}`);
+                const data = await res.json();
+                
+                document.getElementById('loading-state').style.display = 'none';
+
+                if (data.metrics) {
+                    document.getElementById('metric-gross').textContent = 'R ' + parseFloat(data.metrics.total_sales).toFixed(2);
+                    document.getElementById('metric-fees').textContent = 'R ' + parseFloat(data.metrics.total_fees_paid).toFixed(2);
+                    document.getElementById('metric-net').textContent = 'R ' + parseFloat(data.metrics.net_payout).toFixed(2);
+                }
+
+                if (data.products && data.products.length > 0) {
+                    const tbody = document.getElementById('inventory-body');
+                    data.products.forEach(prod => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'border-b border-slate-800/50 hover:bg-[#1a1a20] transition-colors';
+                        
+                        // Highlight low stock
+                        const stockClass = prod.stock_remaining < 10 ? 'text-wine-bright font-bold' : 'text-slate-300';
+                        
+                        tr.innerHTML = `
+                            <td class="py-4 font-medium text-slate-200">${prod.title}</td>
+                            <td class="py-4 text-slate-400 uppercase text-xs tracking-wider">${prod.item_type}</td>
+                            <td class="py-4 text-right text-slate-400">${prod.stock_allocated}</td>
+                            <td class="py-4 text-right ${stockClass}">${prod.stock_remaining}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else if(data.products) {
+                    document.getElementById('inventory-body').innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-500">No active product allocations found.</td></tr>`;
+                }
+            } catch (error) {
+                document.getElementById('loading-state').textContent = 'Failed to load ledger data.';
+            }
+        }
+
+        document.getElementById('download-manifest').addEventListener('click', () => {
+            window.location.href = `/api/dashboard/tenant/${producerId}/manifest`;
+        });
+
+        fetchTenantData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{
+  "version": "3.1",
+  "screens": [
+    {
+      "id": "WINE_SELECTION",
+      "title": "Buy Farm Wine",
+      "terminal": true,
+      "success_action": {
+        "name": "data_exchange",
+        "payload": {
+          "product_sku": "${form.product_sku}",
+          "quantity": "${form.quantity}",
+          "full_name": "${form.full_name}",
+          "email": "${form.email}",
+          "shipping_address": "${form.shipping_address}"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Farm Wine Selection"
+          },
+          {
+            "type": "TextBody",
+            "text": "Select the wine bundle and provide your shipping details."
+          },
+          {
+            "type": "Dropdown",
+            "name": "product_sku",
+            "label": "Wine Bundle",
+            "required": true,
+            "data-source": [
+              { "id": "SPRING-WINE-6", "title": "Springfield Life from Stone 6-Pack" },
+              { "id": "GB-MCC-3", "title": "Graham Beck Brut MCC 3-Pack" }
+            ]
+          },
+          {
+            "type": "TextInput",
+            "name": "quantity",
+            "label": "Quantity (Cases)",
+            "required": true,
+            "input-type": "number"
+          },
+          {
+            "type": "TextInput",
+            "name": "full_name",
+            "label": "Full Name",
+            "required": true,
+            "input-type": "text"
+          },
+          {
+            "type": "TextInput",
+            "name": "email",
+            "label": "Email Address",
+            "required": true,
+            "input-type": "email"
+          },
+          {
+            "type": "TextArea",
+            "name": "shipping_address",
+            "label": "Full Shipping Address",
+            "required": true
+          },
+          {
+            "type": "Footer",
+            "label": "Proceed to Payment",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {}
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "version": "3.1",
+  "screens": [
+    {
+      "id": "TICKET_SELECTION",
+      "title": "Robertson Wine Valley Tickets",
+      "terminal": true,
+      "success_action": {
+        "name": "data_exchange",
+        "payload": {
+          "ticket_type": "${form.ticket_type}",
+          "quantity": "${form.quantity}",
+          "full_name": "${form.full_name}",
+          "email": "${form.email}"
+        }
+      },
+      "layout": {
+        "type": "SingleColumnLayout",
+        "children": [
+          {
+            "type": "TextHeading",
+            "text": "Get Your Valley Pass"
+          },
+          {
+            "type": "TextBody",
+            "text": "Select the type of ticket and quantity below."
+          },
+          {
+            "type": "Dropdown",
+            "name": "ticket_type",
+            "label": "Ticket Type",
+            "required": true,
+            "data-source": [
+              { "id": "SATURDAY_PASS", "title": "Saturday Pass (R150)" },
+              { "id": "SUNDAY_PASS", "title": "Sunday Pass (R150)" },
+              { "id": "WEEKEND_PASS", "title": "Weekend Pass (R250)" }
+            ]
+          },
+          {
+            "type": "TextInput",
+            "name": "quantity",
+            "label": "Quantity",
+            "required": true,
+            "input-type": "number"
+          },
+          {
+            "type": "TextInput",
+            "name": "full_name",
+            "label": "Full Name",
+            "required": true,
+            "input-type": "text"
+          },
+          {
+            "type": "TextInput",
+            "name": "email",
+            "label": "Email Address",
+            "required": true,
+            "input-type": "email"
+          },
+          {
+            "type": "Footer",
+            "label": "Proceed to Payment",
+            "on-click-action": {
+              "name": "complete",
+              "payload": {}
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

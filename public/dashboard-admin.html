@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Admin - Project Vitis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="min-h-screen p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-bold text-gradient">Central Admin Dashboard</h1>
+                <p class="text-slate-400">Robertson Wine Valley Ecosystem View</p>
+            </div>
+            <a href="/" class="px-4 py-2 bg-[#1a1a20] hover:bg-wine border border-slate-700 rounded-lg transition-colors text-sm font-medium hover-lift">
+                Switch Role
+            </a>
+        </header>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10" id="metrics-container">
+            <div class="glass-panel p-6 hover-lift">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Total Tickets Sold</h3>
+                <p class="text-3xl font-bold text-white" id="metric-tickets">-</p>
+            </div>
+            <div class="glass-panel p-6 hover-lift border-l-4 border-l-wine">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Total Wine Revenue (GMV)</h3>
+                <p class="text-3xl font-bold text-wine-bright" id="metric-wine">-</p>
+            </div>
+            <div class="glass-panel p-6 hover-lift border-l-4 border-l-wine">
+                <h3 class="text-slate-400 text-sm font-medium mb-1">Total Platform Fees Collected</h3>
+                <p class="text-3xl font-bold text-white" id="metric-fees">-</p>
+            </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="glass-panel p-6">
+            <h2 class="text-xl font-bold text-white mb-6">Producer Leaderboard</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-slate-400 text-sm">
+                            <th class="pb-3 font-medium">Farm Name</th>
+                            <th class="pb-3 font-medium text-right">Items Sold</th>
+                            <th class="pb-3 font-medium text-right">Gross Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="text-sm">
+                        <!-- JS injects rows here -->
+                    </tbody>
+                </table>
+                <div id="loading-state" class="py-10 text-center text-slate-500">Loading ecosystem data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchAdminData() {
+            try {
+                const res = await fetch('/api/dashboard/admin');
+                const data = await res.json();
+                
+                document.getElementById('loading-state').style.display = 'none';
+
+                if (data.metrics) {
+                    document.getElementById('metric-tickets').textContent = data.metrics.total_tickets;
+                    document.getElementById('metric-wine').textContent = 'R ' + parseFloat(data.metrics.total_wine_revenue).toFixed(2);
+                    document.getElementById('metric-fees').textContent = 'R ' + parseFloat(data.metrics.total_platform_fees).toFixed(2);
+                }
+
+                if (data.leaderboard) {
+                    const tbody = document.getElementById('leaderboard-body');
+                    data.leaderboard.forEach(farm => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'border-b border-slate-800/50 hover:bg-[#1a1a20] transition-colors';
+                        tr.innerHTML = `
+                            <td class="py-4 font-medium text-slate-200">${farm.farm_name}</td>
+                            <td class="py-4 text-right text-slate-300">${farm.total_items}</td>
+                            <td class="py-4 text-right text-wine-bright font-medium">R ${parseFloat(farm.total_sales).toFixed(2)}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('loading-state').textContent = 'Failed to load data. Ensure database is running and seeded.';
+            }
+        }
+
+        fetchAdminData();
+    </script>
+</body>
+</html>

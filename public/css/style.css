@@ -1,0 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #121214; /* Premium charcoal background */
+    color: #f8fafc; /* Crisp white text */
+}
+
+/* Glassmorphism Panel anchored in dark luxury */
+.glass-panel {
+    background: rgba(20, 20, 24, 0.85); /* Deep charcoal panel */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(88, 17, 26, 0.4); /* Subtle wine border */
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    border-radius: 1rem;
+}
+
+/* Smooth Micro-animations */
+.hover-lift {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(88, 17, 26, 0.4);
+    border-color: rgba(88, 17, 26, 0.8);
+}
+
+/* Wine Gradient Text styling */
+.text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(to right, #f8fafc, #9c2738); 
+}
+
+/* Wine Tone Utilities */
+.bg-wine { background-color: #58111A; }
+.bg-wine-hover:hover { background-color: #410c13; }
+.text-wine { color: #9c2738; } /* Lighter wine for text readability */
+.text-wine-bright { color: #d63d54; } 
+.border-l-wine { border-left-color: #58111A; }
