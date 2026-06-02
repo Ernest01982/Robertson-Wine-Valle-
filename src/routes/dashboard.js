@@ -26,6 +26,7 @@ router.get('/api/dashboard/admin', async (req, res) => {
                 COALESCE(SUM(t.quantity_ordered), 0) AS total_items
             FROM producers pr
             LEFT JOIN transactions t ON pr.id = t.producer_id AND t.payment_status = 'successful'
+            WHERE pr.is_approved = TRUE
             GROUP BY pr.id, pr.farm_name
             ORDER BY total_sales DESC
         `);
@@ -40,6 +41,93 @@ router.get('/api/dashboard/admin', async (req, res) => {
     }
 });
 
+// Fetch pending producers for Admin Approval Queue
+router.get('/api/dashboard/admin/pending', async (req, res) => {
+    try {
+        const { rows } = await db.query(`
+            SELECT id, farm_name, contact_email, created_at 
+            FROM producers 
+            WHERE is_approved = FALSE
+            ORDER BY created_at ASC
+        `);
+        return res.status(200).json(rows);
+    } catch (error) {
+        console.error("Pending Producers Error:", error);
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+});
+
+// Approve or Reject a pending producer
+router.patch('/api/dashboard/admin/producers/:id/status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { action } = req.body; // 'approve' or 'reject'
+
+        if (action === 'approve') {
+            await db.query(`UPDATE producers SET is_approved = TRUE WHERE id = $1`, [id]);
+            return res.status(200).json({ status: "success", message: "Producer approved" });
+        } else if (action === 'reject') {
+            await db.query(`DELETE FROM producers WHERE id = $1 AND is_approved = FALSE`, [id]);
+            return res.status(200).json({ status: "success", message: "Producer rejected and removed" });
+        } else {
+            return res.status(400).json({ status: "error", message: "Invalid action" });
+        }
+    } catch (error) {
+        console.error("Producer Approval Error:", error);
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+});
+
+// --- TENANT ONBOARDING ROUTES --- //
+
+// Register a new Farm (Step 1: No Banking Details yet)
+router.post('/api/dashboard/producers', async (req, res) => {
+    try {
+        const { farm_name, contact_email } = req.body;
+        
+        const insertResult = await db.query(`
+            INSERT INTO producers (farm_name, contact_email, is_approved)
+            VALUES ($1, $2, FALSE)
+            RETURNING id
+        `, [farm_name, contact_email]);
+
+        return res.status(201).json({
+            status: "success",
+            message: "Farm registered successfully. Awaiting admin approval.",
+            producer_id: insertResult.rows[0].id
+        });
+    } catch (error) {
+        console.error("Producer Registration Error:", error);
+        if (error.code === '23505') { // Unique constraint violation (email)
+            return res.status(400).json({ status: "error", message: "Email already registered." });
+        }
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+});
+
+// Update Banking Details (Step 2: Approved Tenants only)
+router.patch('/api/dashboard/tenant/:id/banking', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { bank_account_number, bank_routing_code } = req.body;
+
+        const updateResult = await db.query(`
+            UPDATE producers 
+            SET bank_account_number = $1, bank_routing_code = $2 
+            WHERE id = $3 AND is_approved = TRUE
+            RETURNING id
+        `, [bank_account_number, bank_routing_code, id]);
+
+        if (updateResult.rows.length === 0) {
+            return res.status(403).json({ status: "error", message: "Farm not found or not approved yet." });
+        }
+
+        return res.status(200).json({ status: "success", message: "Banking details updated securely." });
+    } catch (error) {
+        console.error("Banking Update Error:", error);
+        return res.status(500).json({ status: "error", message: error.message });
+    }
+});
 
 // --- TENANT DASHBOARD ROUTES --- //
 

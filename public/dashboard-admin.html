@@ -55,6 +55,26 @@
                 <div id="loading-state" class="py-10 text-center text-slate-500">Loading ecosystem data...</div>
             </div>
         </div>
+
+        <!-- Pending Approvals Queue -->
+        <div class="glass-panel p-6 mt-6 border-t-4 border-t-yellow-600">
+            <h2 class="text-xl font-bold text-white mb-6">Pending Approvals Queue</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-slate-400 text-sm">
+                            <th class="pb-3 font-medium">Farm Name</th>
+                            <th class="pb-3 font-medium">Contact Email</th>
+                            <th class="pb-3 font-medium">Applied On</th>
+                            <th class="pb-3 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-body" class="text-sm">
+                        <tr><td colspan="4" class="py-10 text-center text-slate-500">Loading queue...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -89,7 +109,64 @@
             }
         }
 
+        async function fetchPendingFarms() {
+            try {
+                const res = await fetch('/api/dashboard/admin/pending');
+                const data = await res.json();
+                const tbody = document.getElementById('pending-body');
+                tbody.innerHTML = ''; 
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-500">No pending approvals.</td></tr>';
+                    return;
+                }
+
+                data.forEach(farm => {
+                    const tr = document.createElement('tr');
+                    tr.id = `farm-row-${farm.id}`;
+                    tr.className = 'border-b border-slate-800/50 hover:bg-[#1a1a20] transition-colors';
+                    tr.innerHTML = `
+                        <td class="py-4 font-medium text-slate-200">${farm.farm_name}</td>
+                        <td class="py-4 text-slate-300">${farm.contact_email}</td>
+                        <td class="py-4 text-slate-400 text-sm">${new Date(farm.created_at).toLocaleDateString()}</td>
+                        <td class="py-4 text-right space-x-2">
+                            <button onclick="updateFarmStatus('${farm.id}', 'approve')" class="px-3 py-1 bg-green-900/50 hover:bg-green-800 text-green-300 rounded border border-green-700 transition-colors text-xs font-medium">Approve</button>
+                            <button onclick="updateFarmStatus('${farm.id}', 'reject')" class="px-3 py-1 bg-red-900/50 hover:bg-red-800 text-red-300 rounded border border-red-700 transition-colors text-xs font-medium">Reject</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                document.getElementById('pending-body').innerHTML = '<tr><td colspan="4" class="py-4 text-center text-red-500">Failed to load pending queue.</td></tr>';
+            }
+        }
+
+        async function updateFarmStatus(id, action) {
+            if(!confirm(`Are you sure you want to ${action} this farm?`)) return;
+            try {
+                const res = await fetch(`/api/dashboard/admin/producers/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action })
+                });
+                if (res.ok) {
+                    document.getElementById(`farm-row-${id}`).remove();
+                    fetchAdminData(); 
+                    
+                    const tbody = document.getElementById('pending-body');
+                    if (tbody.children.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-500">No pending approvals.</td></tr>';
+                    }
+                } else {
+                    alert('Failed to update status');
+                }
+            } catch (error) {
+                alert('Network error while updating status');
+            }
+        }
+
         fetchAdminData();
+        fetchPendingFarms();
     </script>
 </body>
 </html>

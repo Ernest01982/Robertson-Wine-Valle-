@@ -47,6 +47,29 @@
             </div>
         </div>
 
+        <!-- Banking Setup -->
+        <div class="glass-panel p-6 mb-10 border-t-4 border-t-slate-700">
+            <h2 class="text-xl font-bold text-white mb-2">Banking Details</h2>
+            <p class="text-sm text-slate-400 mb-6">Secure your payout routing destination.</p>
+            
+            <form id="banking-form" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Account Number</label>
+                    <input type="text" id="bank-acc" required class="w-full bg-[#1a1a20] border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-wine transition-colors text-sm">
+                </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Routing Code</label>
+                    <input type="text" id="bank-route" required class="w-full bg-[#1a1a20] border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-wine transition-colors text-sm">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="px-6 py-2 bg-[#1a1a20] border border-slate-600 hover:border-wine text-white rounded-lg transition-colors font-medium hover-lift text-sm h-[38px]">
+                        Save Details
+                    </button>
+                </div>
+            </form>
+            <div id="bank-msg" class="hidden mt-4 text-sm font-medium"></div>
+        </div>
+
         <!-- Inventory List -->
         <div class="glass-panel p-6">
             <h2 class="text-xl font-bold text-white mb-6">Active Allocations</h2>
@@ -114,6 +137,39 @@
 
         document.getElementById('download-manifest').addEventListener('click', () => {
             window.location.href = `/api/dashboard/tenant/${producerId}/manifest`;
+        });
+
+        document.getElementById('banking-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgBox = document.getElementById('bank-msg');
+            msgBox.className = "hidden mt-4 text-sm font-medium";
+            
+            const payload = {
+                bank_account_number: document.getElementById('bank-acc').value,
+                bank_routing_code: document.getElementById('bank-route').value
+            };
+
+            try {
+                const res = await fetch(`/api/dashboard/tenant/${producerId}/banking`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                msgBox.classList.remove('hidden');
+                if (res.ok) {
+                    msgBox.classList.add('text-green-400');
+                    msgBox.textContent = data.message;
+                } else {
+                    msgBox.classList.add('text-red-400');
+                    msgBox.textContent = data.message;
+                }
+            } catch(e) {
+                msgBox.classList.remove('hidden');
+                msgBox.classList.add('text-red-400');
+                msgBox.textContent = "Network error while saving details.";
+            }
         });
 
         fetchTenantData();

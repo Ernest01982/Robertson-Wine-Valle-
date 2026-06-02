@@ -2,12 +2,13 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. TENANT DIRECTORY (Wine Farms / Producers)
-CREATE TABLE producers (
+CREATE TABLE IF NOT EXISTS producers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     farm_name VARCHAR(255) NOT NULL,
     contact_email VARCHAR(255) UNIQUE NOT NULL,
-    bank_account_number VARCHAR(100) NOT NULL,
-    bank_routing_code VARCHAR(50) NOT NULL,
+    bank_account_number VARCHAR(100),
+    bank_routing_code VARCHAR(50),
+    is_approved BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

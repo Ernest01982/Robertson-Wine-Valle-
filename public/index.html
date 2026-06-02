@@ -9,11 +9,14 @@
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     
-    <div class="glass-panel max-w-md w-full p-8 text-center">
-        <div class="mb-8">
-            <h1 class="text-4xl font-bold mb-2 text-gradient">Project Vitis</h1>
-            <p class="text-slate-400">Select your access tier to enter the portal.</p>
-        </div>
+    <div class="max-w-4xl w-full flex flex-col md:flex-row gap-8">
+        
+        <!-- Portal Login Panel -->
+        <div class="glass-panel flex-1 p-8 text-center">
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold mb-2 text-gradient">Project Vitis</h1>
+                <p class="text-slate-400">Select your access tier to enter the portal.</p>
+            </div>
 
         <div class="space-y-4">
             <a href="/dashboard-admin.html" class="block w-full py-4 px-6 bg-[#1a1a20] hover:bg-wine hover-lift transition-colors border border-slate-700 rounded-xl font-medium text-left flex justify-between items-center group">
@@ -34,10 +37,71 @@
             </a>
         </div>
         
-        <div class="mt-8 text-sm text-slate-500">
-            <p>Automated WhatsApp Commerce Engine</p>
+            <div class="mt-8 text-sm text-slate-500">
+                <p>Automated WhatsApp Commerce Engine</p>
+            </div>
         </div>
+
+        <!-- Registration Panel -->
+        <div class="glass-panel flex-1 p-8">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-white mb-1">Register Your Farm</h2>
+                <p class="text-sm text-slate-400">Join the ecosystem. Approval required.</p>
+            </div>
+            
+            <form id="register-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Farm Name</label>
+                    <input type="text" id="reg-name" required class="w-full bg-[#1a1a20] border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-wine transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Contact Email</label>
+                    <input type="email" id="reg-email" required class="w-full bg-[#1a1a20] border border-slate-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-wine transition-colors">
+                </div>
+                <button type="submit" class="w-full py-3 bg-wine hover:bg-wine-hover text-white rounded-lg transition-colors font-medium hover-lift mt-4">
+                    Submit Registration
+                </button>
+            </form>
+            
+            <div id="reg-message" class="hidden mt-4 p-4 rounded-lg text-sm border"></div>
+        </div>
+
     </div>
 
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msgBox = document.getElementById('reg-message');
+            msgBox.className = "hidden mt-4 p-4 rounded-lg text-sm border";
+            
+            const payload = {
+                farm_name: document.getElementById('reg-name').value,
+                contact_email: document.getElementById('reg-email').value
+            };
+
+            try {
+                const res = await fetch('/api/dashboard/producers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                msgBox.classList.remove('hidden');
+                if (res.ok) {
+                    msgBox.classList.add('bg-green-900/50', 'border-green-500', 'text-green-300');
+                    msgBox.innerHTML = `<strong>Success!</strong> ${data.message}<br><br>Save your Login ID:<br><code class="text-white">${data.producer_id}</code>`;
+                    document.getElementById('register-form').reset();
+                } else {
+                    msgBox.classList.add('bg-red-900/50', 'border-red-500', 'text-red-300');
+                    msgBox.textContent = data.message || "Registration failed.";
+                }
+            } catch (error) {
+                msgBox.classList.remove('hidden');
+                msgBox.classList.add('bg-red-900/50', 'border-red-500', 'text-red-300');
+                msgBox.textContent = "Network error. Make sure the server is running.";
+            }
+        });
+    </script>
 </body>
 </html>
